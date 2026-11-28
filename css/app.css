@@ -181,8 +181,23 @@ html.booting #sample-hint { display: none !important; }
   color: #fff;
 }
 
-.top h1 { font-size: 18px; font-weight: 700; }
+.top h1 {
+  font-size: 18px;
+  font-weight: 700;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
+.top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: none;
+}
+
+#filters-btn,
 #lock-btn {
   min-height: 44px;
   padding: 0 14px;
@@ -192,7 +207,35 @@ html.booting #sample-hint { display: none !important; }
   border-radius: 999px;
 }
 
+#filters-btn {
+  padding-right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  max-width: 42vw;
+}
+
+#filters-btn::after {
+  content: "";
+  width: 0;
+  height: 0;
+  border: 4px solid transparent;
+  border-top-color: #fff;
+  border-bottom-width: 0;
+  transform: translateY(1px);
+}
+
+#filters-btn[aria-expanded="true"]::after {
+  border-top-color: transparent;
+  border-bottom-color: #fff;
+  border-bottom-width: 4px;
+  border-top-width: 0;
+  transform: translateY(-1px);
+}
+
 .controls { flex: none; background: var(--paper); }
+.controls[hidden] { display: none !important; }
 
 .dates, .toggles {
   display: flex;
@@ -259,7 +302,7 @@ html.booting #sample-hint { display: none !important; }
 
 .map-pane {
   position: relative;
-  flex: 0 0 44%;
+  flex: 1 1 auto;
   min-height: 210px;
   background: #E7E1D6;
   overflow: hidden;
@@ -380,8 +423,8 @@ button.dot-btn.is-selected::after {
 }
 
 .list-pane {
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 0 0 42dvh;
+  min-height: 160px;
   overflow: auto;
   background: var(--paper);
   -webkit-overflow-scrolling: touch;
@@ -518,12 +561,15 @@ button.dot-btn.is-selected::after {
     width: 42%;
     min-width: 240px;
     max-width: 400px;
+    min-height: 0;
+    height: auto;
     border-left: 1px solid var(--line);
   }
 }
 
 @media (max-height: 420px) {
-  .map-pane { flex-basis: 36%; min-height: 120px; }
+  .map-pane { flex: 1 1 36%; min-height: 120px; }
+  .list-pane { flex: 1 1 0; min-height: 0; }
   .lock-card h1 { font-size: 22px; }
 }
 

@@ -39,9 +39,14 @@
   <div id="app" class="app" hidden>
     <header class="top">
       <h1>배달 타임라인</h1>
-      <button id="lock-btn" type="button">잠금</button>
+      <div class="top-actions">
+        <button id="filters-btn" type="button" aria-expanded="false" aria-controls="controls">
+          <span id="filters-label"></span>
+        </button>
+        <button id="lock-btn" type="button">잠금</button>
+      </div>
     </header>
-    <div class="controls">
+    <div id="controls" class="controls" hidden>
       <div id="dates" class="dates" role="tablist" aria-label="날짜"></div>
       <div class="toggles">
         <button id="toggle-night" class="chip" type="button" aria-pressed="true"><span class="dot night" aria-hidden="true"></span>야간</button>

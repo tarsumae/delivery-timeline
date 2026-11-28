@@ -175,6 +175,34 @@ function syncToggles() {
   $("toggle-path").setAttribute("aria-pressed", state.showPath ? "true" : "false");
 }
 
+function filtersLabel() {
+  return state.mode === "all" ? "전체 기간" : shortDate(state.date);
+}
+
+function syncFiltersButton() {
+  const button = $("filters-btn");
+  const label = $("filters-label");
+  const text = filtersLabel();
+  if (label) label.textContent = text;
+  else button.textContent = text;
+  button.setAttribute("aria-expanded", $("controls").hidden ? "false" : "true");
+}
+
+function refreshMapSize() {
+  requestAnimationFrame(() => {
+    mapCtl.resize();
+    requestAnimationFrame(() => mapCtl.resize());
+  });
+}
+
+function toggleFilters() {
+  const panel = $("controls");
+  const open = panel.hidden;
+  panel.hidden = !open;
+  $("filters-btn").setAttribute("aria-expanded", open ? "true" : "false");
+  refreshMapSize();
+}
+
 function summaryText(view) {
   if (view.mode === "all") {
     return `전체 기간 · ${view.rows.length}곳 · 방문 ${view.stops.length}회`;
@@ -264,6 +292,7 @@ function render({ fit = false, scrollList = false } = {}) {
   if (!state.view) return;
   renderDates();
   syncToggles();
+  syncFiltersButton();
   renderList(state.view);
   if (scrollList) listPane.scrollTop = 0;
   if (state.selectedId && !findStop(state.selectedId)) {
@@ -392,6 +421,7 @@ const mapCtl = {
     if (!this.map) return;
     const rect = mapEl.getBoundingClientRect();
     if (rect.width < 2 || rect.height < 2) return;
+    if (typeof this.map.autoResize === "function") this.map.autoResize();
     this.map.setSize(new naver.maps.Size(Math.round(rect.width), Math.round(rect.height)));
   },
 
@@ -756,6 +786,7 @@ function bind() {
     }
   });
   $("lock-btn").addEventListener("click", lock);
+  $("filters-btn").addEventListener("click", toggleFilters);
   $("toggle-night").addEventListener("click", () => {
     state.night = !state.night;
     state.selectedId = null;
