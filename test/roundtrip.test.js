@@ -134,6 +134,28 @@ test("day and all-period views", async () => {
   assert.equal(dayOnly.rows.some((row) => row.name === "가상대지"), false);
 });
 
+test("post-midnight evening stops sort after that evening", () => {
+  const timeline = normalize({
+    days: [{
+      date: "2026-11-23",
+      shifts: [
+        { kind: "주간", label: "주간 (저녁)", stops: [
+          { t: "00:05", lat: 37.2, lon: 127.0, road: "A", jibun: "1" },
+          { t: "23:50", lat: 37.2, lon: 127.0, road: "B", jibun: "2" },
+          { t: "19:10", lat: 37.2, lon: 127.0, road: "C", jibun: "3" },
+        ] },
+        { kind: "야간", label: "야간 (새벽)", stops: [
+          { t: "02:10", lat: 37.2, lon: 127.0, road: "D", jibun: "4" },
+        ] },
+      ],
+    }],
+  });
+  const both = { night: true, day: true };
+  const view = dayView(timeline, "2026-11-23", both);
+  assert.deepEqual(view.stops.map((stop) => stop.t), ["02:10", "19:10", "23:50", "00:05"]);
+  assert.equal(view.groups[0].kind, "야간");
+});
+
 test("same name or same road merges, blank fields do not", () => {
   const rows = mergeStops([
     { id: "a", name: "X", road: "R1", jibun: "1", kind: "야간", date: "2026-11-25", t: "01:00", lat: 1, lon: 1 },

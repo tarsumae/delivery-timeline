@@ -9,8 +9,15 @@ function asString(value) {
   return value == null ? "" : String(value);
 }
 
+// A 주간 (evening) shift runs past midnight, so its 00:xx stops belong
+// after that evening's stops, not before them.
+function sortKey(stop) {
+  const late = stop.kind === "주간" && stop.t < "12:00";
+  return `${late ? "1" : "0"}${stop.t}`;
+}
+
 function stamp(stop) {
-  return `${stop.date}T${stop.t}`;
+  return `${stop.date}T${sortKey(stop)}`;
 }
 
 export function escapeHtml(value) {
@@ -209,7 +216,7 @@ export function dayView(timeline, date, filters) {
   if (day) {
     for (const shift of day.shifts) {
       if (!kindOn(shift.kind, filters)) continue;
-      const stops = shift.stops.slice().sort((a, b) => a.t.localeCompare(b.t));
+      const stops = shift.stops.slice().sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
       if (!stops.length) continue;
       groups.push({
         kind: shift.kind,
@@ -220,7 +227,7 @@ export function dayView(timeline, date, filters) {
       if (path) paths.push(path);
     }
   }
-  groups.sort((a, b) => a.stops[0].t.localeCompare(b.stops[0].t));
+  groups.sort((a, b) => sortKey(a.stops[0]).localeCompare(sortKey(b.stops[0])));
   return {
     mode: "day",
     date,

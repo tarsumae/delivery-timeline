@@ -280,8 +280,6 @@ const mapCtl = {
   info: null,
   markers: [],
   lines: [],
-  offsets: [],
-  offsetSig: "",
   sig: "",
   authFailed: false,
   note: "",
@@ -382,7 +380,6 @@ const mapCtl = {
       if (picked) return;
       clearSelection();
     });
-    naver.maps.Event.addListener(this.map, "idle", () => this.separateNaver());
     this.backend = "naver";
     schemaEl.hidden = true;
     mapNote.hidden = true;
@@ -434,8 +431,6 @@ const mapCtl = {
     for (const line of this.lines) line.setMap(null);
     this.markers = [];
     this.lines = [];
-    this.offsets = [];
-    this.offsetSig = "";
   },
 
   drawNaver(view) {
@@ -461,39 +456,11 @@ const mapCtl = {
         position: new naver.maps.LatLng(stop.lat, stop.lon),
         map: this.map,
         zIndex: 10,
-        icon: dotIcon(stop, 0, 0),
+        icon: dotIcon(stop),
       });
       naver.maps.Event.addListener(marker, "click", () => selectStop(stop.id, { zoom: false }));
       this.markers.push(marker);
     }
-    this.separateNaver();
-  },
-
-  separateNaver() {
-    if (this.backend !== "naver" || !this.map || !this.markers.length || !state.view) return;
-    const projection = this.map.getProjection();
-    if (!projection || typeof projection.fromCoordToOffset !== "function") return;
-    const raw = this.markers.map((marker) => {
-      const px = projection.fromCoordToOffset(marker.getPosition());
-      return { x: px.x, y: px.y };
-    });
-    const placed = separatePoints(raw, 40);
-    const sig = placed.map((point, index) => {
-      return `${Math.round(point.x - raw[index].x)}:${Math.round(point.y - raw[index].y)}`;
-    }).join(",");
-    if (sig === this.offsetSig) return;
-    this.offsetSig = sig;
-    this.offsets = placed.map((point, index) => ({
-      dx: point.x - raw[index].x,
-      dy: point.y - raw[index].y,
-    }));
-    this.markers.forEach((marker, index) => {
-      const stop = state.view.stops[index];
-      const shift = this.offsets[index];
-      if (!stop || !shift || typeof marker.setIcon !== "function") return;
-      marker.setIcon(dotIcon(stop, shift.dx, shift.dy));
-    });
-    this.highlight();
   },
 
   drawSchema(view) {
@@ -642,12 +609,12 @@ schemaEl.addEventListener("click", () => {
   clearSelection();
 });
 
-function dotIcon(stop, dx, dy) {
+function dotIcon(stop) {
   const model = infoModel(stop);
   return {
     content: `<button type="button" class="dot-btn" data-kind="${escapeHtml(stop.kind)}" data-id="${escapeHtml(stop.id)}" aria-label="${escapeHtml(model.primary)}, ${escapeHtml(model.badge)}"></button>`,
     size: new naver.maps.Size(44, 44),
-    anchor: new naver.maps.Point(22 - dx, 22 - dy),
+    anchor: new naver.maps.Point(22, 22),
   };
 }
 
