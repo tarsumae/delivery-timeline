@@ -174,10 +174,32 @@ test("stripRegion drops 영통구 prefixes and the info window has a width", () 
   assert.equal(html.includes("영통구"), false);
   assert.match(html, /광교호수공원로 20/);
   assert.match(html, /하동 10/);
-  assert.match(html, /min-width:\s*240px/);
-  assert.match(html, /width:\s*240px/);
+  assert.match(html, /min-width:\s*90px/);
+  assert.match(html, /max-width:\s*240px/);
+  assert.match(html, /width:\s*max-content/);
   assert.match(html, /word-break:\s*keep-all/);
   assert.match(html, /iw-badge/);
+  const short = infoHtml({
+    t: "03:00",
+    lat: 37.2,
+    lon: 127.0,
+    road: "",
+    jibun: "매탄동 362-1",
+    kind: "주간",
+  }, { width: 118 });
+  assert.match(short, /width:\s*118px/);
+  assert.equal(/white-space:\s*nowrap/.test(short), true);
+  const long = infoHtml({
+    t: "03:00",
+    lat: 37.2,
+    lon: 127.0,
+    road: "광교호수공원로 155번길 37-12",
+    jibun: "원천동 548-19",
+    kind: "야간",
+  }, { width: 240, wrap: true });
+  assert.match(long, /width:\s*240px/);
+  assert.match(long, /iw-wrap/);
+  assert.match(long, /white-space:\s*normal/);
 });
 
 test("same name or same road merges, blank fields do not", () => {

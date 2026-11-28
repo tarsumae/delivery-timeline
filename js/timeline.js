@@ -110,22 +110,69 @@ export function infoModel(stop) {
   };
 }
 
-export function infoHtml(stop) {
+export const INFO_MIN_WIDTH = 90;
+export const INFO_MAX_WIDTH = 240;
+
+export function infoHtml(stop, options = {}) {
   const model = infoModel(stop);
   const tone = model.badge === "야간" ? "night" : "day";
   const secondary = model.secondary
     ? `<p class="iw-sub">${escapeHtml(model.secondary)}</p>`
     : "";
+  const wrap = !!options.wrap;
+  const width = Number(options.width);
+  const widthRule = Number.isFinite(width) && width > 0
+    ? `width:${Math.round(width)}px;`
+    : "width:max-content;";
   const box =
-    "width:240px;min-width:240px;max-width:260px;box-sizing:border-box;" +
-    "display:block;white-space:normal;word-break:keep-all;overflow-wrap:break-word;";
+    widthRule +
+    `min-width:${INFO_MIN_WIDTH}px;max-width:${INFO_MAX_WIDTH}px;` +
+    "box-sizing:border-box;display:block;" +
+    (wrap ? "white-space:normal;" : "white-space:nowrap;") +
+    "word-break:keep-all;overflow-wrap:break-word;";
+  const wrapClass = wrap ? " iw-wrap" : "";
   return (
-    `<div class="iw" style="${box}">` +
+    `<div class="iw${wrapClass}" style="${box}">` +
     `<span class="iw-badge ${tone}">${escapeHtml(model.badge)}</span>` +
     `<p class="iw-main">${escapeHtml(model.primary)}</p>` +
     secondary +
     `</div>`
   );
+}
+
+function probeInfoWidth(html) {
+  const host = document.createElement("div");
+  host.style.cssText = "position:absolute;left:0;top:0;opacity:0;pointer-events:none;z-index:-1;";
+  document.body.appendChild(host);
+  host.innerHTML = html;
+  const card = host.querySelector(".iw") || host.firstElementChild;
+  card.style.width = "auto";
+  card.style.minWidth = "0";
+  card.style.maxWidth = "none";
+  card.style.whiteSpace = "nowrap";
+  const cs = getComputedStyle(card);
+  const pad =
+    (parseFloat(cs.paddingLeft) || 0) +
+    (parseFloat(cs.paddingRight) || 0) +
+    (parseFloat(cs.borderLeftWidth) || 0) +
+    (parseFloat(cs.borderRightWidth) || 0);
+  const childMax = Math.max(0, ...[...card.children].map((el) => el.scrollWidth));
+  const width = Math.ceil(Math.max(
+    card.scrollWidth,
+    card.getBoundingClientRect().width,
+    childMax + pad,
+  )) + 1;
+  host.remove();
+  return width;
+}
+
+export function sizedInfoHtml(stop) {
+  const draft = infoHtml(stop);
+  if (typeof document === "undefined" || !document.body) return draft;
+  const natural = probeInfoWidth(draft);
+  const wrap = natural > INFO_MAX_WIDTH;
+  const width = Math.max(INFO_MIN_WIDTH, Math.min(INFO_MAX_WIDTH, natural || INFO_MIN_WIDTH));
+  return infoHtml(stop, { width, wrap });
 }
 
 export function dayRowModel(stop) {

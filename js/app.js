@@ -4,7 +4,7 @@ import {
   dayView,
   escapeHtml,
   formatKoreanDate,
-  infoHtml,
+  sizedInfoHtml,
   infoModel,
   newestDate,
   normalize,
@@ -596,13 +596,14 @@ const mapCtl = {
         }
       }
       const marker = this.markers[state.view.stops.findIndex((item) => item.id === stop.id)] || null;
-      this.info.setContent(infoHtml(stop));
+      this.info.setContent(sizedInfoHtml(stop));
       if (marker) this.info.open(this.map, marker);
       else this.info.open(this.map, position);
+      requestAnimationFrame(() => this.restyleInfoChrome());
       this.highlight();
       return;
     }
-    schemaInfo.innerHTML = infoHtml(stop);
+    schemaInfo.innerHTML = sizedInfoHtml(stop);
     schemaInfo.hidden = false;
     schemaInfo.style.transform = "translate(-50%, calc(-100% - 8px))";
     const button = buttonById(schemaEl, stop.id);
@@ -620,7 +621,22 @@ const mapCtl = {
     });
   },
 
+  restyleInfoChrome() {
+    const card = mapEl.querySelector(".iw") || schemaInfo.querySelector(".iw");
+    if (!card) return;
+    let node = card.parentElement;
+    for (let i = 0; i < 8 && node && node !== mapPane; i += 1) {
+      node.style.background = "transparent";
+      node.style.backgroundColor = "transparent";
+      node.style.border = "0";
+      node.style.borderWidth = "0";
+      node.style.boxShadow = "none";
+      node = node.parentElement;
+    }
+  },
+
   closeInfo() {
+
     if (this.info && this.info.getMap && this.info.getMap()) this.info.close();
     schemaInfo.hidden = true;
     schemaInfo.replaceChildren();
