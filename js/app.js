@@ -361,7 +361,7 @@ const mapCtl = {
       try {
         const typeId = (naver.maps.MapTypeId && naver.maps.MapTypeId.NORMAL) || "normal";
         options.mapTypes = new naver.maps.MapTypeRegistry({
-          [typeId]: styleApi.getNormalMap({ overlayType: "bg.lko" }),
+          [typeId]: styleApi.getNormalMap({ overlayType: "bg.ol.ts.ctt.lko" }),
         });
         options.mapTypeId = typeId;
       } catch (err) {
