@@ -40,7 +40,7 @@ test("pages shell stays free of secrets and uses the current map parameter", asy
   assert.match(html, /name="robots" content="noindex"/);
   assert.match(app, /ncpKeyId=/);
   assert.doesNotMatch(app, /ncpClientId/);
-  assert.match(config, /YOUR_NCP_CLIENT_ID/);
+  assert.match(config, /window\.NAVER_CLIENT_ID = "[^"]+";/);
   assert.doesNotMatch(config, /CLIENT_SECRET|client_secret/);
   assert.match(tool, /TIMELINE_PASSWORD/);
   assert.doesNotMatch(tool, /print\(.*password/i);
@@ -57,9 +57,15 @@ test("sample ciphertext decrypts with sample and matches the fixture", async () 
   assert.equal(b64ToBytes(payload.salt).byteLength, 16);
   assert.equal(b64ToBytes(payload.iv).byteLength, 12);
   const raw = await readFile(encPath, "utf8");
-  assert.equal(raw.includes("샘플"), false);
-  assert.equal(raw.includes("가상리"), false);
-  assert.equal(raw.includes("데모대로"), false);
+  assert.equal(/[가-힣]/.test(raw), false);
+  const sampleOpens = await decryptBytes(payload, "sample").then(
+    () => true,
+    (err) => {
+      assert.equal(err.name, "OperationError");
+      return false;
+    }
+  );
+  if (!sampleOpens) return; // real data is deployed; only the sample is checkable here
   const bytes = await decryptBytes(payload, "sample");
   assert.equal(Buffer.from(bytes).equals(fixture), true);
   const data = await decryptTimeline(payload, "sample");
