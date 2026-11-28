@@ -86,9 +86,15 @@ function kindOn(kind, filters) {
   return false;
 }
 
+export function stripRegion(value) {
+  return String(value ?? "")
+    .trim()
+    .replace(/^(?:경기도?\s+)?(?:수원시\s+)?영통구\s+/, "");
+}
+
 function addressParts(stop) {
-  const road = stop.road.trim();
-  const jibun = stop.jibun.trim();
+  const road = stripRegion(stop.road);
+  const jibun = stripRegion(stop.jibun);
   return {
     primary: road || jibun,
     secondary: road ? jibun : "",
@@ -110,9 +116,12 @@ export function infoHtml(stop) {
   const secondary = model.secondary
     ? `<p class="iw-sub">${escapeHtml(model.secondary)}</p>`
     : "";
+  const box =
+    "width:240px;min-width:240px;max-width:260px;box-sizing:border-box;" +
+    "display:block;white-space:normal;word-break:keep-all;overflow-wrap:break-word;";
   return (
-    `<div class="iw">` +
-    `<p class="iw-badge ${tone}">${escapeHtml(model.badge)}</p>` +
+    `<div class="iw" style="${box}">` +
+    `<span class="iw-badge ${tone}">${escapeHtml(model.badge)}</span>` +
     `<p class="iw-main">${escapeHtml(model.primary)}</p>` +
     secondary +
     `</div>`

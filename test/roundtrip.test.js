@@ -12,6 +12,7 @@ import {
   formatKoreanDate,
   infoHtml,
   infoModel,
+  stripRegion,
   mergeStops,
   newestDate,
   normalize,
@@ -154,6 +155,29 @@ test("post-midnight evening stops sort after that evening", () => {
   const view = dayView(timeline, "2026-11-23", both);
   assert.deepEqual(view.stops.map((stop) => stop.t), ["02:10", "19:10", "23:50", "00:05"]);
   assert.equal(view.groups[0].kind, "야간");
+});
+
+test("stripRegion drops 영통구 prefixes and the info window has a width", () => {
+  assert.equal(stripRegion("영통구 광교호수공원로 20"), "광교호수공원로 20");
+  assert.equal(stripRegion("수원시 영통구 매탄동 176"), "매탄동 176");
+  assert.equal(stripRegion("경기도 수원시 영통구 덕영대로 1"), "덕영대로 1");
+  assert.equal(stripRegion("경기 수원시 영통구 원천동 1"), "원천동 1");
+  assert.equal(stripRegion("덕영대로 1"), "덕영대로 1");
+  const html = infoHtml({
+    t: "03:00",
+    lat: 37.2,
+    lon: 127.0,
+    road: "영통구 광교호수공원로 20",
+    jibun: "수원시 영통구 하동 10",
+    kind: "야간",
+  });
+  assert.equal(html.includes("영통구"), false);
+  assert.match(html, /광교호수공원로 20/);
+  assert.match(html, /하동 10/);
+  assert.match(html, /min-width:\s*240px/);
+  assert.match(html, /width:\s*240px/);
+  assert.match(html, /word-break:\s*keep-all/);
+  assert.match(html, /iw-badge/);
 });
 
 test("same name or same road merges, blank fields do not", () => {
