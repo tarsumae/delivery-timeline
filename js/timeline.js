@@ -115,7 +115,6 @@ export const INFO_MAX_WIDTH = 240;
 
 export function infoHtml(stop, options = {}) {
   const model = infoModel(stop);
-  const tone = model.badge === "야간" ? "night" : "day";
   const secondary = model.secondary
     ? `<p class="iw-sub">${escapeHtml(model.secondary)}</p>`
     : "";
@@ -133,7 +132,6 @@ export function infoHtml(stop, options = {}) {
   const wrapClass = wrap ? " iw-wrap" : "";
   return (
     `<div class="iw${wrapClass}" style="${box}">` +
-    `<span class="iw-badge ${tone}">${escapeHtml(model.badge)}</span>` +
     `<p class="iw-main">${escapeHtml(model.primary)}</p>` +
     secondary +
     `</div>`

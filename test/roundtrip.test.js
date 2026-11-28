@@ -112,7 +112,8 @@ test("day and all-period views", async () => {
   assert.equal(html.includes(blank.t), false);
   assert.equal(html.includes("가상대지"), false);
   assert.match(html, /별리지 9-3/);
-  assert.match(html, /야간/);
+  assert.equal(html.includes("야간"), false);
+  assert.equal(html.includes("iw-badge"), false);
   const hostile = infoHtml({ ...blank, road: `<img alt="">`, jibun: `a"b` });
   assert.equal(hostile.includes("<img"), false);
   assert.match(hostile, /&lt;img/);
@@ -178,7 +179,8 @@ test("stripRegion drops 영통구 prefixes and the info window has a width", () 
   assert.match(html, /max-width:\s*240px/);
   assert.match(html, /width:\s*max-content/);
   assert.match(html, /word-break:\s*keep-all/);
-  assert.match(html, /iw-badge/);
+  assert.equal(html.includes("iw-badge"), false);
+  assert.equal(html.includes("야간"), false);
   const short = infoHtml({
     t: "03:00",
     lat: 37.2,
